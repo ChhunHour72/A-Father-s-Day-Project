@@ -69,13 +69,13 @@ const Hero = () => {
                 
                 <div className="photo-frame w-40 h-40 rounded-full border-4 border-white shadow-lg mb-8 overflow-hidden">
                   <img 
-                    src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                    src="https://uk.figuredart.com/cdn/shop/products/father-and-his-son-advanced-landscapes-new-arrivals-paint-by-numbers-global-figuredart-free-shipping_848.jpg?v=1648636587" 
                     alt="Father and Child" 
                     className="w-full h-full object-cover"
                   />
                 </div>
                 
-                <p className="message italic text-lg text-shadow">Thank you for being my hero and my guide</p>
+                <p className="message italic text-lg text-shadow">Thank you for everything you have done for us</p>
                 
                 <button 
                   className="flip-button absolute bottom-5 right-5 bg-white bg-opacity-20 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-400 hover:bg-opacity-30 hover:rotate-180"

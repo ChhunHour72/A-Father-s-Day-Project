@@ -295,7 +295,8 @@ const Templates = () => {
                 </button>
                 
                 <div className="w-full max-w-md">
-                  <CardPreview previewData={templates[selectedTemplateId]} />
+                   {/* FIX: Changed previewData to initialData and passed the correct object structure */}
+                  <CardPreview initialData={{ cardData: templates[selectedTemplateId] }} />
                 </div>
               </div>
               

@@ -7,12 +7,25 @@ import { FaUpload } from 'react-icons/fa';
 const CardEditor = ({ activeTab }) => {
   const { cardData, updateCardData, palettes, fonts } = useCardContext();
 
+  // Handler for the main card photo
   const handleImageUpload = useCallback((e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (event) => {
         updateCardData({ image: event.target.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  }, [updateCardData]);
+  
+  // Handler for the new background image
+  const handleBackgroundImageUpload = useCallback((e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        updateCardData({ backgroundImage: event.target.result });
       };
       reader.readAsDataURL(file);
     }
@@ -72,29 +85,54 @@ const CardEditor = ({ activeTab }) => {
 
   if (activeTab === 'image') {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
+        {/* Card Photo Section */}
         <div>
-            <label className={labelClass}>Upload Photo</label>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Card Photo</h3>
             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-orange-50 transition-colors">
                 <FaUpload className="w-8 h-8 text-gray-400 mb-2"/>
-                <p className="text-sm text-gray-500">Click to upload an image</p>
+                <p className="text-sm text-gray-500">Click to upload a photo</p>
                 <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             </label>
+            {cardData.image && (
+              <div className="mt-4">
+                <p className={labelClass}>Current Photo</p>
+                <div className="relative border border-gray-200 rounded-lg overflow-hidden">
+                  <img src={cardData.image} alt="Uploaded preview" className="w-full h-32 object-cover"/>
+                  <button
+                    onClick={() => updateCardData({ image: null })}
+                    className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+            )}
         </div>
-        {cardData.image && (
-          <div>
-            <p className={labelClass}>Current Image</p>
-            <div className="relative border border-gray-200 rounded-lg overflow-hidden">
-              <img src={cardData.image} alt="Uploaded preview" className="w-full h-32 object-cover"/>
-              <button
-                onClick={() => updateCardData({ image: null })}
-                className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
-              >
-                &times;
-              </button>
-            </div>
-          </div>
-        )}
+
+        {/* Card Background Section */}
+        <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Card Background</h3>
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-orange-50 transition-colors">
+                <FaUpload className="w-8 h-8 text-gray-400 mb-2"/>
+                <p className="text-sm text-gray-500">Click to upload a background</p>
+                <input type="file" accept="image/*" onChange={handleBackgroundImageUpload} className="hidden" />
+            </label>
+            {cardData.backgroundImage && (
+              <div className="mt-4">
+                <p className={labelClass}>Current Background</p>
+                <div className="relative border border-gray-200 rounded-lg overflow-hidden">
+                  <img src={cardData.backgroundImage} alt="Background preview" className="w-full h-32 object-cover"/>
+                  <button
+                    onClick={() => updateCardData({ backgroundImage: null })}
+                    className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+            )}
+        </div>
       </div>
     );
   }
@@ -103,4 +141,3 @@ const CardEditor = ({ activeTab }) => {
 };
 
 export default CardEditor;
-

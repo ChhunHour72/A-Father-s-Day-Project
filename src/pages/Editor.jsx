@@ -2,18 +2,16 @@ import React, { useState, useCallback, useRef } from 'react';
 import { useCardContext } from '../context/useCardContext';
 import CardPreview from '../components/card/CardPreview';
 import CardEditor from '../components/card/CardEditor';
-import TemplateSelector from '../components/card/TemplateSelector';
 import Modal from '../components/ui/Modal';
 import ToastsContainer from '../components/ui/Toast';
-import { FaPalette, FaSave, FaDownload, FaUndo, FaShareAlt, FaPrint, FaTimes, FaThLarge, FaPenSquare, FaImage } from 'react-icons/fa';
+import { FaPalette, FaSave, FaDownload, FaUndo, FaShareAlt, FaPenSquare, FaImage } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
-import { motion } from 'framer-motion';
 
 const Editor = () => {
-  const { cardData, updateCardData, resetCard, applyTemplate, templates } = useCardContext();
+  const { cardData, updateCardData, resetCard } = useCardContext();
   const [activeTab, setActiveTab] = useState('content');
-  const [isProcessing, setIsProcessing] = useState(null); // 'download', 'share', 'print', 'save'
+  const [isProcessing, setIsProcessing] = useState(null);
   const [modalState, setModalState] = useState({ isOpen: false });
   const [toasts, setToasts] = useState([]);
   const previewRef = useRef(null);
@@ -27,23 +25,23 @@ const Editor = () => {
     setToasts(current => current.filter(toast => toast.id !== id));
   };
 
-  const captureCardImage = useCallback(async () => {
+  const captureCardAsBlob = useCallback(async () => {
     if (!previewRef.current) return null;
     try {
-      const canvas = await html2canvas(previewRef.current.querySelector('.transition-transform'), { // Target the flipper element
+      const canvas = await html2canvas(previewRef.current, {
         scale: 2,
         backgroundColor: null,
         logging: false,
         useCORS: true,
       });
-      return canvas;
+      return await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     } catch (error) {
       console.error("Error capturing card image:", error);
       addToast('Could not capture card image.', 'error');
       return null;
     }
   }, []);
-  
+
   const handleAction = async (actionType, actionFn) => {
     setIsProcessing(actionType);
     try {
@@ -56,15 +54,37 @@ const Editor = () => {
   }
 
   const handleDownloadCard = useCallback(async () => {
-    const canvas = await captureCardImage();
-    if (!canvas) return;
-    canvas.toBlob(blob => {
-      if (blob) {
-        saveAs(blob, `fathers-day-card.png`);
-        addToast('Download started!', 'success');
-      }
-    });
-  }, [captureCardImage]);
+    const blob = await captureCardAsBlob();
+    if (blob) {
+      saveAs(blob, `fathers-day-card.png`);
+      addToast('Download started!', 'success');
+    }
+  }, [captureCardAsBlob]);
+  
+  const handleShareCard = useCallback(async () => {
+    if (!navigator.share) {
+      addToast('Sharing is not supported on this browser.', 'error');
+      return;
+    }
+
+    const blob = await captureCardAsBlob();
+    if (blob) {
+        const file = new File([blob], 'fathers-day-card.png', { type: blob.type });
+        try {
+            await navigator.share({
+                title: "A Card for Dad",
+                text: "Check out this Father's Day card I made!",
+                files: [file],
+            });
+            addToast('Shared successfully!', 'success');
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Share failed:', error);
+                addToast('Sharing failed.', 'error');
+            }
+        }
+    }
+  }, [captureCardAsBlob]);
 
   const handleResetCard = useCallback(() => {
     setModalState({
@@ -82,7 +102,6 @@ const Editor = () => {
   }, [resetCard]);
 
   const handleSaveDraft = useCallback(() => {
-    // The context already saves to localStorage automatically
     addToast('Draft saved successfully!', 'success');
   }, []);
 
@@ -97,19 +116,16 @@ const Editor = () => {
       <ToastsContainer toasts={toasts} dismissToast={dismissToast} />
       <Modal {...modalState} />
       <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
-        {/* === PREVIEW PANEL === */}
         <div className="w-full lg:w-1/2 xl:w-3/5 bg-gradient-to-br from-warm-light to-warm-medium p-4 sm:p-8 flex items-center justify-center">
             <CardPreview ref={previewRef} />
         </div>
         
-        {/* === EDITOR PANEL === */}
         <div className="w-full lg:w-1/2 xl:w-2/5 bg-white shadow-2xl lg:shadow-none flex flex-col">
             <div className="p-6 border-b border-gray-200">
                 <h1 className="text-2xl font-bold text-primary">Card Editor</h1>
                 <p className="text-gray-500">Customize your perfect card here.</p>
             </div>
             
-            {/* Editor Tabs */}
             <div className="border-b border-gray-200 px-4">
                 <div className="flex -mb-px">
                 {TABS.map(tab => (
@@ -129,13 +145,11 @@ const Editor = () => {
                 </div>
             </div>
 
-            {/* Editor Content */}
             <div className="flex-grow p-6 overflow-y-auto">
                 <CardEditor activeTab={activeTab} />
             </div>
 
-            {/* Action Footer */}
-            <div className="p-4 bg-gray-50 border-t border-gray-200 grid grid-cols-2 gap-3">
+            <div className="p-4 bg-gray-50 border-t border-gray-200 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <button
                     onClick={() => handleAction('reset', handleResetCard)}
                     className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 rounded-lg font-semibold text-primary hover:bg-gray-100 transition-colors"
@@ -147,12 +161,19 @@ const Editor = () => {
                     disabled={isProcessing === 'save'}
                     className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 rounded-lg font-semibold text-primary hover:bg-gray-100 transition-colors"
                 >
-                    <FaSave/> Save Draft
+                    <FaSave/> Save
+                </button>
+                <button
+                    onClick={() => handleAction('share', handleShareCard)}
+                    disabled={isProcessing === 'share'}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 rounded-lg font-semibold text-primary hover:bg-gray-100 transition-colors"
+                >
+                    <FaShareAlt/> Share
                 </button>
                 <button
                     onClick={() => handleAction('download', handleDownloadCard)}
                     disabled={isProcessing === 'download'}
-                    className="col-span-2 flex items-center justify-center gap-2 px-4 py-3 bg-secondary text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors disabled:bg-gray-400"
+                    className="col-span-2 sm:col-span-3 flex items-center justify-center gap-2 px-4 py-3 bg-secondary text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors disabled:bg-gray-400"
                 >
                     <FaDownload /> {isProcessing === 'download' ? 'Downloading...' : 'Download Card'}
                 </button>
