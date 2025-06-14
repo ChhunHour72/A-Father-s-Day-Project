@@ -10,7 +10,7 @@ const CTA = () => {
   }, []);
 
   return (
-    <section className="cta py-32 bg-gradient-to-r from-primary to-dark text-white relative overflow-hidden">
+    <section className="cta py-24 bg-gradient-to-r from-primary to-dark text-white relative overflow-hidden">
       {/* Floating decorative elements */}
       <div className="absolute top-[-100px] left-[-100px] w-72 h-72 rounded-full bg-white bg-opacity-5 animate-pulse"></div>
       <div className="absolute bottom-[-150px] right-[-100px] w-96 h-96 rounded-full bg-secondary bg-opacity-5 animate-pulse"></div>

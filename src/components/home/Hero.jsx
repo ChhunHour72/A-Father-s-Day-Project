@@ -10,7 +10,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="hero pt-40 pb-20 md:pt-40 md:pb-24 relative">
+    <section className="hero py-24 relative">
       <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div className="hero-content w-full md:w-1/2 mb-16 md:mb-0 md:pr-8">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold leading-tight mb-6">
