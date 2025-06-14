@@ -28,6 +28,15 @@ const FONT_STYLES = {
   khmer_art: { name: 'Moul (Khmer)', family: "'Moul', serif" },
 };
 
+// --- ADDED: Frame definitions ---
+const FRAMES = {
+  none: { name: 'None' },
+  simple: { name: 'Simple' },
+  circle: { name: 'Circle' },
+  polaroid: { name: 'Polaroid' },
+  vintage: { name: 'Vintage' },
+};
+
 // Enhanced templates with new Khmer template
 const TEMPLATES = {
   khmer: {
@@ -132,10 +141,11 @@ const TEMPLATES = {
 
 const CardContext = createContext();
 
-// Add backgroundImage to the default state
+// --- MODIFIED: Added 'frame' to the default state ---
 const defaultState = {
   ...TEMPLATES.storyteller,
-  backgroundImage: null, // This property will hold the custom background
+  frame: 'none',
+  backgroundImage: null,
   lastUpdated: new Date().toISOString()
 };
 
@@ -145,7 +155,6 @@ export const CardProvider = ({ children }) => {
       const savedData = localStorage.getItem('fathersDayCardDraft');
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        // Ensure new properties exist
         return { ...defaultState, ...parsed };
       }
       return defaultState;
@@ -170,11 +179,11 @@ export const CardProvider = ({ children }) => {
   const applyTemplate = (templateId) => {
     const template = TEMPLATES[templateId] || TEMPLATES.storyteller;
     setCardData(prev => ({ 
-      // Reset to default state, then apply template, keeping existing images
       ...defaultState,
       ...template, 
       image: prev.image,
       backgroundImage: prev.backgroundImage,
+      frame: 'none', // Reset frame on template change
       lastUpdated: new Date().toISOString() 
     }));
   };
@@ -187,6 +196,7 @@ export const CardProvider = ({ children }) => {
     }
   }, [cardData]);
 
+  // --- MODIFIED: Export 'frames' in the context value ---
   const value = { 
     cardData, 
     updateCardData, 
@@ -194,7 +204,8 @@ export const CardProvider = ({ children }) => {
     applyTemplate,
     templates: TEMPLATES,
     palettes: COLOR_PALETTES,
-    fonts: FONT_STYLES
+    fonts: FONT_STYLES,
+    frames: FRAMES
   };
 
   return <CardContext.Provider value={value}>{children}</CardContext.Provider>;

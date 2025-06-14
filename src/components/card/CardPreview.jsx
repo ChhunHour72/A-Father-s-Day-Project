@@ -7,7 +7,7 @@ const CardPreview = forwardRef(({ initialData }, ref) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const globalContext = useCardContext();
 
-  const { cardData, palettes, fonts } = initialData ? { ...initialData, ...globalContext } : globalContext;
+  const { cardData, palettes, fonts, frames } = initialData ? { ...globalContext, ...initialData } : globalContext;
 
   const flipCard = (e) => {
     e.stopPropagation();
@@ -16,44 +16,64 @@ const CardPreview = forwardRef(({ initialData }, ref) => {
 
   const currentPalette = palettes[cardData.colorPalette] || palettes.storyteller;
   const currentFont = fonts[cardData.fontFamily] || fonts.vintage;
+  const selectedFrame = cardData.frame || 'none';
 
-  // Style for the text content
   const cardContentStyle = {
     fontFamily: currentFont.family,
     color: currentPalette.primaryText,
   };
 
-  // Style for the main card container (handles background image)
   const cardContainerStyle = {
     backgroundImage: `url(${cardData.backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundColor: currentPalette.bg, // Fallback color
+    backgroundColor: currentPalette.bg,
   };
-
+  
   const insideMessageStyle = {
     whiteSpace: 'pre-wrap',
   };
   
+  const getFrameContainerClasses = () => {
+    const base = "transition-all duration-500 ease-in-out";
+    switch(selectedFrame) {
+      case 'polaroid': return `${base} bg-white p-2 pb-8 shadow-lg transform -rotate-2`;
+      case 'vintage': return `${base} p-2 border-8`;
+      case 'simple': return `${base} p-1 bg-white shadow-md`;
+      case 'circle': return `${base} p-1 bg-white shadow-md rounded-full`;
+      default: return "";
+    }
+  }
+
+  const getFrameContainerStyles = () => {
+      if (selectedFrame === 'vintage') {
+          return { backgroundColor: '#f7f3e9', borderColor: '#c69f89', boxShadow: 'inset 0 0 8px rgba(0,0,0,0.2)' };
+      }
+      return {};
+  }
+  
+  const getImageClasses = () => {
+    const base = "w-40 h-40 object-cover";
+    switch(selectedFrame) {
+      case 'circle': return `${base} rounded-full`;
+      default: return `${base}`;
+    }
+  }
+
   const StaticCard = ({ isFront }) => (
     <div 
         className="w-[400px] h-[533px] rounded-2xl overflow-hidden relative"
         style={cardContainerStyle}
     >
-        {/* Render template visual if no background image is set */}
         {!cardData.backgroundImage && cardData.visual && (
             <TemplateVisual visualType={cardData.visual} palette={currentPalette}/>
         )}
-
-        {/* Overlay to ensure text readability on custom background */}
         {cardData.backgroundImage && (
             <div 
                 className="absolute inset-0 w-full h-full"
                 style={{ backgroundColor: currentPalette.bg, opacity: 0.85 }}
             ></div>
         )}
-        
-        {/* Content */}
         <div className="absolute inset-0 flex flex-col justify-center items-center p-8 text-center" style={cardContentStyle}>
             {isFront ? (
                 <>
@@ -63,9 +83,20 @@ const CardPreview = forwardRef(({ initialData }, ref) => {
                     <p className="text-xl mb-4" style={{ color: currentPalette.secondaryText }}>
                         {cardData.subtitle}
                     </p>
-                    <div className="w-40 h-40 rounded-full border-4 shadow-md mb-5 overflow-hidden bg-gray-200" style={{ borderColor: currentPalette.accent }}>
-                        {cardData.image ? <img src={cardData.image} alt="Personalized" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">No Photo</div>}
+
+                    {/* --- MODIFIED: Frame now wraps placeholder too --- */}
+                    <div className="mb-5 flex items-center justify-center" style={{minHeight: '220px'}}>
+                        <div className={getFrameContainerClasses()} style={getFrameContainerStyles()}>
+                            {cardData.image ? (
+                                <img src={cardData.image} alt="Personalized" className={getImageClasses()} />
+                            ) : (
+                                <div className={`${getImageClasses()} bg-gray-200 flex items-center justify-center text-xs text-gray-500`}>
+                                    No Photo
+                                </div>
+                            )}
+                        </div>
                     </div>
+
                     <p className="italic text-lg" style={{ color: currentPalette.secondaryText }}>
                         {cardData.message}
                     </p>

@@ -2,12 +2,12 @@ import React, { useCallback } from 'react';
 import { useCardContext } from '../../context/useCardContext';
 import ColorPaletteSelector from '../ui/ColorPaletteSelector';
 import FontSelector from '../ui/FontSelector';
+import FrameSelector from '../ui/FrameSelector';
 import { FaUpload } from 'react-icons/fa';
 
 const CardEditor = ({ activeTab }) => {
-  const { cardData, updateCardData, palettes, fonts } = useCardContext();
+  const { cardData, updateCardData, palettes, fonts, frames } = useCardContext();
 
-  // Handler for the main card photo
   const handleImageUpload = useCallback((e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -19,7 +19,6 @@ const CardEditor = ({ activeTab }) => {
     }
   }, [updateCardData]);
   
-  // Handler for the new background image
   const handleBackgroundImageUpload = useCallback((e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -108,6 +107,16 @@ const CardEditor = ({ activeTab }) => {
                 </div>
               </div>
             )}
+        </div>
+
+        {/* --- MODIFIED: Frame selector is no longer conditional --- */}
+        <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Image Frame</h3>
+            <FrameSelector
+                frames={frames}
+                selectedFrame={cardData.frame}
+                onSelect={(frame) => updateCardData({ frame })}
+            />
         </div>
 
         {/* Card Background Section */}
