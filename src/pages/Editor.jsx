@@ -6,7 +6,6 @@ import Modal from '../components/ui/Modal';
 import ToastsContainer from '../components/ui/Toast';
 import { FaPalette, FaSave, FaDownload, FaUndo, FaShareAlt, FaPenSquare, FaImage } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
-import { saveAs } from 'file-saver';
 
 const Editor = () => {
   const { cardData, updateCardData, resetCard } = useCardContext();
@@ -15,11 +14,11 @@ const Editor = () => {
   const [modalState, setModalState] = useState({ isOpen: false });
   const [toasts, setToasts] = useState([]);
   const previewRef = useRef(null);
-  
-  const addToast = (message, type = 'info') => {
+
+  const addToast = useCallback((message, type = 'info') => {
     const id = Date.now();
     setToasts(current => [...current, { id, message, type }]);
-  };
+  }, []);
 
   const dismissToast = (id) => {
     setToasts(current => current.filter(toast => toast.id !== id));
@@ -27,8 +26,21 @@ const Editor = () => {
 
   const captureCardAsBlob = useCallback(async () => {
     if (!previewRef.current) return null;
+
+    const flipper = previewRef.current.querySelector('[data-testid="flipper"]');
+    const isFlipped = flipper && flipper.style.transform.includes('180deg');
+
+    const nodeToCapture = isFlipped
+      ? previewRef.current.querySelector('[data-testid="card-back-face"]')
+      : previewRef.current.querySelector('[data-testid="card-front-face"]');
+      
+    if (!nodeToCapture) {
+        addToast('Could not find the card face to capture.', 'error');
+        return null;
+    }
+
     try {
-      const canvas = await html2canvas(previewRef.current, {
+      const canvas = await html2canvas(nodeToCapture, {
         scale: 2,
         backgroundColor: null,
         logging: false,
@@ -40,7 +52,7 @@ const Editor = () => {
       addToast('Could not capture card image.', 'error');
       return null;
     }
-  }, []);
+  }, [addToast]);
 
   const handleAction = async (actionType, actionFn) => {
     setIsProcessing(actionType);
@@ -56,10 +68,17 @@ const Editor = () => {
   const handleDownloadCard = useCallback(async () => {
     const blob = await captureCardAsBlob();
     if (blob) {
-      saveAs(blob, `fathers-day-card.png`);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'fathers-day-card.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       addToast('Download started!', 'success');
     }
-  }, [captureCardAsBlob]);
+  }, [captureCardAsBlob, addToast]);
   
   const handleShareCard = useCallback(async () => {
     if (!navigator.share) {
@@ -84,7 +103,7 @@ const Editor = () => {
             }
         }
     }
-  }, [captureCardAsBlob]);
+  }, [captureCardAsBlob, addToast]);
 
   const handleResetCard = useCallback(() => {
     setModalState({
@@ -99,11 +118,11 @@ const Editor = () => {
       secondaryAction: () => setModalState({ isOpen: false }),
       primaryLabel: "Yes, Reset"
     })
-  }, [resetCard]);
+  }, [resetCard, addToast]);
 
   const handleSaveDraft = useCallback(() => {
     addToast('Draft saved successfully!', 'success');
-  }, []);
+  }, [addToast]);
 
   const TABS = [
     { id: 'content', label: 'Content', icon: <FaPenSquare /> },

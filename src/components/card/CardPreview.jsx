@@ -119,13 +119,14 @@ const CardPreview = forwardRef(({ initialData }, ref) => {
     <div className="w-full max-w-md mx-auto aspect-[3/4] p-4">
         <div className="w-full h-full card-flipper" ref={ref} style={{ perspective: '1200px' }}>
           <div 
+            data-testid="flipper"
             className="relative w-full h-full transition-transform duration-700"
             style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
           >
-            <div className="absolute w-full h-full rounded-2xl shadow-lg" style={{ backfaceVisibility: 'hidden' }} onClick={flipCard}>
+            <div data-testid="card-front-face" className="absolute w-full h-full rounded-2xl shadow-lg" style={{ backfaceVisibility: 'hidden' }} onClick={flipCard}>
               <StaticCard isFront={true} />
             </div>
-            <div className="absolute w-full h-full rounded-2xl shadow-lg" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }} onClick={flipCard}>
+            <div data-testid="card-back-face" className="absolute w-full h-full rounded-2xl shadow-lg" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }} onClick={flipCard}>
               <StaticCard isFront={false} />
             </div>
           </div>
