@@ -117,8 +117,8 @@ const About = () => {
             <div className="grid grid-cols-2 gap-6">
                 {[
                     { value: 1500, label: "Lines of Code" },
-                    { value: 96, label: "Hours Spent" },
-                    { value: 4, label: "Core Templates" },
+                    { value: 32, label: "Hours Spent" },
+                    { value: 6, label: "Core Templates" },
                     { value: 1, label: "Very Proud Dad" }
                 ].map(fact => (
                     <div key={fact.label} className="bg-white p-6 rounded-2xl shadow-md text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
